@@ -1,0 +1,15 @@
+package com.mferreira.validadorurl.configuration;
+
+public enum Options {
+    JDBC_URL,
+    INSERTION_QUEUE,
+    RESPONSE_EXCHANGE,
+    RESPONSE_ROUTING_KEY,
+    VALIDATION_QUEUE,
+    RABBITMQ_NUMBER_OF_VALIDATION_CONSUMERS,
+    RABBITMQ_HOST,
+    RABBITMQ_PORT,
+    RABBITMQ_VHOST,
+    RABBITMQ_USERNAME,
+    RABBITMQ_PASSWORD
+}
