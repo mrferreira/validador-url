@@ -1,10 +1,8 @@
 package com.mferreira.validadorurl.repository;
 
 import com.mferreira.validadorurl.model.Whitelist;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 
-import java.util.List;
-
-public interface WhitelistRepository extends JpaRepository<Whitelist, Long> {
+public interface WhitelistRepository extends CrudRepository<Whitelist, Long> {
     Whitelist findByClient(String client);
 }

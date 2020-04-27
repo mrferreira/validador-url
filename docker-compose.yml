@@ -1,26 +1,45 @@
-app:
-  build: .
-  environment:
-    INSERTION_QUEUE: insertion.queue
-    VALIDATION_QUEUE: validation.queue
-    NUMBER_OF_VALIDATION_CONSUMERS: 1
-    RESPONSE_EXCHANGE: response.exchange
-    RESPONSE_ROUTING_KEY: response.routing.key
-    RABBITMQ_HOST: rabbitmq
-    RABBITMQ_PORT: 5672
-    RABBITMQ_VHOST: /
-    RABBITMQ_USERNAME: guest
-    RABBITMQ_PASSWORD: guest
-    JDBC_URL: jdbc:mysql://mysql:3306/axr_challenge?user=root&password=secret
-  links:
-    - mysql:mysql
-    - rabbitmq:rabbitmq
-mysql:
-  image: mysql:5.7
-  environment:
-    MYSQL_DATABASE: axr_challenge
-    MYSQL_ROOT_PASSWORD: secret
-rabbitmq:
-  image: rabbitmq:3.6-management
-  ports:
-    - 15672:15672
+version: '3'
+services:
+  mysql:
+    image: mysql:5.6
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: axr_challenge
+      MYSQL_ROOT_PASSWORD: secret
+    networks:
+      - axur-bridge-network
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+  rabbitmq:
+    image: rabbitmq:3.6-management
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - axur-bridge-network
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      INSERTION_QUEUE: insertion.queue
+      VALIDATION_QUEUE: validation.queue
+      NUMBER_OF_VALIDATION_CONSUMERS: 1
+      RESPONSE_EXCHANGE: response.exchange
+      RESPONSE_ROUTING_KEY: response.routing.key
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_VHOST: /
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+      JDBC_URL: jdbc:mysql://mysql:3306/axr_challenge?user=root&password=secret
+      POSTGRES_PASSWORD: secret
+    networks:
+      - axur-bridge-network
+    depends_on:
+      - mysql
+      - rabbitmq
+networks:
+  axur-bridge-network:
+    driver: bridge

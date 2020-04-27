@@ -14,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RabbitListener(queues = "${VALIDATION_QUEUE}")
@@ -72,8 +72,8 @@ public class ValidationQueueListener implements QueueListener {
             }
         }
 
-        result.addAll(globalWhitelistRepository.findAll()
-                .stream().map(m -> new Whitelist(null, m.getRegExp()))
+        result.addAll(StreamSupport.stream(globalWhitelistRepository.findAll().spliterator(),false)
+                .map(m -> new Whitelist(null, m.getRegExp()))
                 .collect(Collectors.toList()));
 
         return result;

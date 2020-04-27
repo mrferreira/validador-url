@@ -17,6 +17,7 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConversionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
@@ -26,7 +27,7 @@ import org.springframework.messaging.handler.annotation.support.MethodArgumentNo
 
 @Configuration
 @EnableRabbit
-public class RabbitMQConfiguration implements RabbitListenerConfigurer {
+public class RabbitMQConfiguration implements RabbitListenerConfigurer , CommandLineRunner {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQConfiguration.class.getName());
 
@@ -42,7 +43,7 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
 		return new Queue(insertionQueueName, false);
 	}
 
-	@Bean
+	@Bean(name = "rabbitValidationQueue")
 	Queue validationQueue() {
 		Queue queue = new Queue(validationQueueName, false);
 		return queue;
@@ -79,6 +80,14 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
 		return factory;
 	}
 
+
+	@Override
+	public void run(String... args) {
+		LOGGER.info("Initializing RabbitMQ Admin...");
+		RabbitAdmin rabbitAdmin = applicationContext.getBean(RabbitAdmin.class);
+		rabbitAdmin.initialize();
+	}
+
 	@Override
 	public void configureRabbitListeners(RabbitListenerEndpointRegistrar registrar) {
 		registrar.setMessageHandlerMethodFactory(messageHandlerMethodFactory());
@@ -96,12 +105,6 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
 		return factory;
 	}
 
-	/**
-	 * Extension of Spring-AMQP's
-	 * {@link ConditionalRejectingErrorHandler.DefaultExceptionStrategy}
-	 * which also considers a root cause of {@link MethodArgumentNotValidException}
-	 * (thrown when payload does not validate) as fatal.
-	 */
 	static class InvalidPayloadRejectingFatalExceptionStrategy implements FatalExceptionStrategy {
 
 		private Logger logger = LoggerFactory.getLogger(getClass());
@@ -118,35 +121,4 @@ public class RabbitMQConfiguration implements RabbitListenerConfigurer {
 			return false;
 		}
 	}
-
-
-	//	@Bean
-//	Queue queue() {
-//		return new Queue(queueNameInsertion, false);
-//	}
-//
-//	@Bean
-//	TopicExchange exchange() {
-//		return new TopicExchange(topicExchangeInsertion);
-//	}
-
-//	@Bean
-//	Binding binding(Queue queue, TopicExchange exchange) {
-//		return BindingBuilder.bind(queue).to(exchange).with("foo.bar.#");
-//	}
-
-//	@Bean
-//	SimpleMessageListenerContainer container(ConnectionFactory connectionFactory,
-//				MessageListenerAdapter listenerAdapter) {
-//		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-//		container.setConnectionFactory(connectionFactory);
-//		container.setQueueNames(queueNameInsertion);
-//		container.setMessageListener(listenerAdapter);
-//		return container;
-//	}
-
-//	@Bean
-//	MessageListenerAdapter listenerAdapter(Receiver receiver) {
-//		return new MessageListenerAdapter(receiver, "receiveMessage");
-//	}
 }
